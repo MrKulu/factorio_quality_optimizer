@@ -61,7 +61,7 @@ This is also the form that is used in the code.
 Similarly, we have:
 
 $$
-h_3 = h_3 p_3(1 - q_3)\frac{1 - q_r}{4} + h_4 (q_3 + q_r)p_3(1 - q_3)\frac{1 - q_r}{4} + h_5 (q_3 + q_r)p_3(1 - q_3)\frac{q_r}{4} + p_3q_3
+h_3 = h_3 p_3(1 - q_3)\frac{1 - q_r}{4} + h_4 (q_3 + q_r)p_3(1 - q_3)\frac{1 - q_r}{4} + h_5 (q_3 + q_r)p_3(1 - q_3)\frac{q_r}{4} + p_3q_3^2
 $$
 
 The first term of the sum is if the assembly machine created a Q3 quality item, which was then recycled into Q3 quality input. 

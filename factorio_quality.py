@@ -25,9 +25,9 @@ def h4(k, p4, q4, h5, qr):
     for (p, q, n_p, n_q) in comb:
         # productivity factor
         p = 1 + p
-        div = (4 / (p * (1 - q) * (1 - qr))) - 1
-        coeff5 = qr / (1 - qr)
-        const = 4 * q / ((1 - q) * (1 - qr))
+        div = (4 / p) - ((1 - q) * (1 - qr))
+        coeff5 = qr * (1 - q)
+        const = 4 * q
         
         h = (coeff5 * h5 + const) / div
 
@@ -44,10 +44,10 @@ def h3(k, p3, q3, h5, h4, qr):
     for (p, q, n_p, n_q) in comb:
         p = 1 + p
         # div is always the same
-        div = (4 / (p * (1 - q) * (1 - qr))) - 1
-        coeff4 = (q + qr)
-        coeff5 = (qr / (1 - qr)) * coeff4
-        const = 4 * (q ** 2) / ((1 - q) * (1 - qr))
+        div = (4 / p) - ((1 - q) * (1 - qr))
+        coeff4 = Decimal('0.9') * ((1 - q) * qr + (1 - qr) * q)
+        coeff5 = qr * ((1 - q) * Decimal('0.1') + q * Decimal('0.9'))
+        const = 4 * q * Decimal('0.1')
         
         h = (coeff4 * h4 + coeff5 * h5 + const) / div
 
@@ -61,7 +61,7 @@ def h2(k, p2, q2, h5, h4, h3, qr):
     r = []
     for (p, q, n_p, n_q) in comb:
         p = 1 + p
-        div = (4 / (p * (1 - q) * (1 - qr))) - 1
+        div = (4 / p) - ((1 - q) * (1 - qr))
         coeff3 = (q + qr)
         coeff4 = ((q ** 2) + (q * qr) + (qr ** 2))
         coeff5 = (qr / (1 - qr)) * coeff4
@@ -207,6 +207,6 @@ if __name__ == "__main__":
     # main_full(2,3,5)
     # main_same(2,3,5)
     # main_full(4,2,3)
-    main_same(4,2,3)
+    # main_same(4,2,3)
     # main_full(2,2,3)
     # main_same(2,2,3)

@@ -17,13 +17,13 @@ Note that more machines can be added to the setup, and input does not have to be
 
 Let's define the following variables:
 
- - $p_i$ The productivity bonus of the $i$th tier assembly machine (summing over all modules) (5th tier = Legendary, 4th tier = Epic, etc...)
- - $q_i$ The quality bonus of the $i$th tier assembly machine (summing over all modules)
- - $q_r$ The productivity bonus of the recycler
+ - $p_i$ The productivity of the $i$ th tier assembly machine (with all modules) (5th tier = Legendary, 4th tier = Epic, etc...)
+ - $q_i$ The quality bonus of the $i$ th tier assembly machine (summing over all modules)
+ - $q_r$ The quality bonus of the recycler
  - $k$ The maximum number of modules for the assembly machines
- - $h_i$ The number of top quality items produced from a set of $Q_i$ quality items needed for the $i$th tier assembly machine to produce one output item.
- - $p$ The best avaliable productivity bonus
- - $q$ The best avaliable quality bonus
+ - $h_i$ The number of top quality items produced from a set of $i$ th tier quality items needed for the $i$ th tier assembly machine to produce one output item.
+ - $p$ The best available productivity bonus (for one module)
+ - $q$ The best available quality bonus (for one module)
 
 
 Note that $q_r = q * 4$, since the recycler has 4 module slots.
@@ -37,7 +37,7 @@ $$
 Indeed, there is no need to use quality modules, so assuming base productivity of 1, 
 
 $$
-h_5 = k \times p
+h_5 = 1 + k \times p
 $$
 
 Then, 
@@ -53,7 +53,7 @@ The last term is if the assembly machine created a Q5 quality item.
 This can be rewritten as:
 
 $$
-h_4 = (h_5 \frac{q_r}{1 - q_r} + \frac{4q_4}{(1 - q_4)(1 - q_r)}) / (\frac{4}{(p_4(1 - q_4)(1 - q_r))} - 1) 
+h_4 = (h_5q_r(1 - q_4) + 4q_4) / (\frac{4}{p_4} - (1 - q_4)(1 - q_r)) 
 $$
 
 This is also the form that is used in the code.
@@ -61,7 +61,7 @@ This is also the form that is used in the code.
 Similarly, we have:
 
 $$
-h_3 = h_3 p_3(1 - q_3)\frac{1 - q_r}{4} + h_4 (q_3 + q_r)p_3(1 - q_3)\frac{1 - q_r}{4} + h_5 (q_3 + q_r)p_3(1 - q_3)\frac{q_r}{4} + p_3q_3^2
+h_3 = \frac{p_3}{4} \left( h_3 (1 - q_3)(1 - q_r) + h_4 (0.9q_r(1-q_3) + 0.9q_3(1-q_r)) + h_5 (0.1q_r(1-q_3) + 0.9q_rq_3) + 0.1p_3q_3 \right)
 $$
 
 The first term of the sum is if the assembly machine created a Q3 quality item, which was then recycled into Q3 quality input. 
@@ -80,7 +80,7 @@ The last term is if the assembly machine created a Q5 quality item.
 This can be rewritten as:
 
 $$
-h_3 = (h_4(q_3 + q_r) + h_5(q_3 + q_r)\frac{q_r}{1 - q_r} + \frac{4q_3^2}{(1 - q_3)(1 - q_r)}) / (\frac{4}{p_3(1 - q_3)(1 - q_r)} - 1) 
+h_3 = \left( h_4 (0.9q_r(1-q_3) + 0.9q_3(1-q_r)) + h_5 (0.1q_r(1-q_3) + 0.9q_rq_3) + 0.1p_3q_3 \right) / \left( \frac{4}{p_3} - (1 - q_3)(1 - q_r) \right) 
 $$
 
 And so on.

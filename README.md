@@ -104,7 +104,7 @@ We assume that when a tier or quality is available, all lower ones are too. In p
 The function will return the solutions formatted like this one:
 
 ```bash
-Q3 expected output: 0.16875685353430444901 P:1 Q:3
+Q3 expected output: 0.13840359403868127637 P:2 Q:2
 ```
 
 `Q3` means that the result is for the machine with 3rd quality recipe (5 = Legendary, 4 = Epic, etc...). The number after P is the number of productivity modules, and the number after Q is the number of quality modules for this machine.

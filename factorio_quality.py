@@ -62,10 +62,10 @@ def h2(k, p2, q2, h5, h4, h3, qr):
     for (p, q, n_p, n_q) in comb:
         p = 1 + p
         div = (4 / p) - ((1 - q) * (1 - qr))
-        coeff3 = (q + qr)
-        coeff4 = ((q ** 2) + (q * qr) + (qr ** 2))
-        coeff5 = (qr / (1 - qr)) * coeff4
-        const = 4 * (q ** 3) / ((1 - q) * (1 - qr))
+        coeff3 = Decimal('0.9') * ((qr * (1 - q)) + q * (1 - qr))
+        coeff4 = ( ((1-q)*qr* Decimal('0.09')) + (q * qr * Decimal('0.9') * Decimal('0.9')) + (q * (1-qr) * Decimal('0.09'))  )
+        coeff5 =  ( ((1-q)*qr* Decimal('0.01')) + (q * qr * Decimal('0.9') * Decimal('0.1')) + (q * qr * Decimal('0.09'))  )
+        const = 4 * q * Decimal('0.01')
         
         h = (coeff3 * h3 + coeff4 * h4 + coeff5 * h5 + const) / div
 
@@ -79,12 +79,12 @@ def h1(k, p1, q1, h5, h4, h3, h2, qr):
     r = []
     for (p, q, n_p, n_q) in comb:
         p = 1 + p
-        div = (4 / (p * (1 - q) * (1 - qr))) - 1
-        coeff2 = (q + qr)
-        coeff3 = ((q ** 2) + (q * qr) + (qr ** 2))
-        coeff4 = ((q ** 3) + (q ** 2) * qr + q * (qr ** 2) + (qr ** 3))
-        coeff5 = (qr / (1 - qr)) * coeff4
-        const = 4 * (q ** 4) / ((1 - q) * (1 - qr))
+        div = (4 / p) - ((1 - q) * (1 - qr))
+        coeff2 = Decimal('0.9') * ((qr * (1 - q)) + q * (1 - qr))
+        coeff3 = ( ((1-q)*qr* Decimal('0.09')) + (q * qr * Decimal('0.9') * Decimal('0.9')) + (q * (1-qr) * Decimal('0.09'))  )
+        coeff4 = ( ((1-q)*qr* Decimal('0.009')) + 2 * (q * qr * Decimal('0.09') * Decimal('0.9')) + (q * (1-qr) * Decimal('0.009'))  )
+        coeff5 = ( ((1-q)*qr* Decimal('0.001')) + 2 * (q * qr * Decimal('0.09') * Decimal('0.1')) + (q * qr * Decimal('0.009'))  )
+        const =  4 * q * Decimal('0.001')
         
         h = (coeff2 * h2 + coeff3 * h3 + coeff4 * h4 + coeff5 * h5 + const) / div
 

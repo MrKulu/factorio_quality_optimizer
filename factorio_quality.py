@@ -7,24 +7,26 @@ getcontext().prec = 20
 
 # k: maximum number of modules
 # p5: productivity bonus of one module
+# bp: base productivity of the machine
 # returns the expected number of Q5 output from one Q5 input
-def h5(k, p5):
+def h5(k, p5, bp):
     # when using Q5 input, it is best to use only productivity modules, since the output is guaranteed to be Q5
-    return 1 + (p5*k)
+    return (bp + (p5*k),k,0)
 
 # k: maximum number of modules
 # p4: productivity bonus of one module
 # q4: quality bonus of one module
 # h5: optimized value of 5th assembly machine
 # qr: total quality bonus on recyclers
+# bp: base productivity of the machine
 # returns the best expected number of Q5 output from one Q4 input, with the associated number of productivity and quality modules
-def h4(k, p4, q4, h5, qr):
+def h4(k, p4, q4, h5, qr, bp):
     # possible combinations of productivity and quality modules (min one quality module)
     comb = [(p4*i,q4*(k-i),i,(k-i)) for i in range(k)]
     r = []
     for (p, q, n_p, n_q) in comb:
         # productivity factor
-        p = 1 + p
+        p = bp + p
         div = (4 / p) - ((1 - q) * (1 - qr))
         coeff5 = qr * (1 - q)
         const = 4 * q
@@ -38,11 +40,11 @@ def h4(k, p4, q4, h5, qr):
 
 # The other functions are very similar to h4...
 
-def h3(k, p3, q3, h5, h4, qr):
+def h3(k, p3, q3, h5, h4, qr, bp):
     comb = [(p3*i,q3*(k-i),i,(k-i)) for i in range(k)]
     r = []
     for (p, q, n_p, n_q) in comb:
-        p = 1 + p
+        p = bp + p
         # div is always the same
         div = (4 / p) - ((1 - q) * (1 - qr))
         coeff4 = Decimal('0.9') * ((1 - q) * qr + (1 - qr) * q)
@@ -56,11 +58,11 @@ def h3(k, p3, q3, h5, h4, qr):
     r.sort(key=lambda x: x[0], reverse=True)
     return r[0]
 
-def h2(k, p2, q2, h5, h4, h3, qr):
+def h2(k, p2, q2, h5, h4, h3, qr, bp):
     comb = [(p2*i,q2*(k-i),i,(k-i)) for i in range(k)]
     r = []
     for (p, q, n_p, n_q) in comb:
-        p = 1 + p
+        p = bp + p
         div = (4 / p) - ((1 - q) * (1 - qr))
         coeff3 = Decimal('0.9') * ((qr * (1 - q)) + q * (1 - qr))
         coeff4 = ( ((1-q)*qr* Decimal('0.09')) + (q * qr * Decimal('0.9') * Decimal('0.9')) + (q * (1-qr) * Decimal('0.09'))  )
@@ -74,11 +76,11 @@ def h2(k, p2, q2, h5, h4, h3, qr):
     r.sort(key=lambda x: x[0], reverse=True)
     return r[0]
 
-def h1(k, p1, q1, h5, h4, h3, h2, qr):
+def h1(k, p1, q1, h5, h4, h3, h2, qr, bp):
     comb = [(p1*i,q1*(k-i),i,(k-i)) for i in range(k)]
     r = []
     for (p, q, n_p, n_q) in comb:
-        p = 1 + p
+        p = bp + p
         div = (4 / p) - ((1 - q) * (1 - qr))
         coeff2 = Decimal('0.9') * ((qr * (1 - q)) + q * (1 - qr))
         coeff3 = ( ((1-q)*qr* Decimal('0.09')) + (q * qr * Decimal('0.9') * Decimal('0.9')) + (q * (1-qr) * Decimal('0.09'))  )
@@ -93,7 +95,8 @@ def h1(k, p1, q1, h5, h4, h3, h2, qr):
     r.sort(key=lambda x: x[0], reverse=True)
     return r[0]
 
-prod_modules = {"T1Q1": Decimal('0.04'), "T1Q2": Decimal('0.05'), "T1Q3": Decimal('0.06'), "T1Q4": Decimal('0.07'), "T1Q5": Decimal('0.10'),
+prod_modules = {"T0Q0": Decimal('0'), # When the recipe does not accept productivity modules
+                "T1Q1": Decimal('0.04'), "T1Q2": Decimal('0.05'), "T1Q3": Decimal('0.06'), "T1Q4": Decimal('0.07'), "T1Q5": Decimal('0.10'),
                 "T2Q1": Decimal('0.06'), "T2Q2": Decimal('0.07'), "T2Q3": Decimal('0.09'), "T2Q4": Decimal('0.11'), "T2Q5": Decimal('0.15'),
                 "T3Q1": Decimal('0.10'), "T3Q2": Decimal('0.13'), "T3Q3": Decimal('0.16'), "T3Q4": Decimal('0.19'), "T3Q5": Decimal('0.25')}
     
@@ -101,112 +104,66 @@ qual_modules = {"T1Q1": Decimal('0.010'), "T1Q2": Decimal('0.013'), "T1Q3": Deci
                 "T2Q1": Decimal('0.020'), "T2Q2": Decimal('0.026'), "T2Q3": Decimal('0.032'), "T2Q4": Decimal('0.038'), "T2Q5": Decimal('0.050'),
                 "T3Q1": Decimal('0.025'), "T3Q2": Decimal('0.032'), "T3Q3": Decimal('0.040'), "T3Q4": Decimal('0.047'), "T3Q5": Decimal('0.062')}
 
-def get_module_kind(tier, quality):
-    return "T" + str(tier) + "Q" + str(quality)
-
-def get_all_modules_under(tier, quality):
-    return [get_module_kind(t, q) for t in range(1, tier+1) for q in range(1, quality+1)]
 
 def save_to_csv(data, filename):
     with open(filename, mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerows(data)
 
-def save_intermediate_results(r,filename):
-    headers = ["Productivity module", "Prod bonus", "Quality module", "Qual bonus", "E_out", "n_p", "n_q"]
-    csv_data = [headers] + r
-    save_to_csv(csv_data, filename)
-    print("CSV file saved as " + filename)
-
-# combinations: list of tuples (p, q) where p is the productivity module and q is the quality module
-# All combinations are tested for each machine, and the best result is kept for the next machine.
 # We can solve from the highest quality producing machine to the lowest. (see the definitions of the h_i)
-# Since each h_i is optimized, this also means that the setup can take any quality of outside input (not just Q1), and still be optimal.
-def aux(k, max_tier, max_quality, combinations, file_suffix):
+# Note: Since each h_i is optimized, this also means that the setup can take any quality of outside input (not just Q1), and still be optimal.
+def full_setup(k, best_prod, best_quality, bp):
+    # p: max avialable quality for productivity modules
+    # q: max available quality for quality modules
+    # It is always better to use the best available modules.
+    p = prod_modules[best_prod];
+    q = qual_modules[best_quality];
     # 4 quality modules per recycler
-    qr = qual_modules[get_module_kind(max_tier, max_quality)] * 4
+    qr = q * 4
     # best productivity module in max tier assembly machine
-    p5 = prod_modules[get_module_kind(max_tier, max_quality)]
-    h5_value = h5(k, p5)
-    print("Q5 expected output: " + str(h5_value))
+    p5 = p
+    h5_value = h5(k, p5, bp)
     # best h4 value
-    r = []
-    for (p, q) in combinations:
-        p4 = prod_modules[p]
-        q4 = qual_modules[q]
-        r.append((p, p4, q, q4, *h4(k, p4, q4, h5_value, qr)))
-
-    filename_h4 = 'h4_'+str(k)+'_'+file_suffix+'.csv'
-    save_intermediate_results(r, filename_h4)
-
-    r.sort(key=lambda x: x[4], reverse=True)
-    print("Q4 expected output: " + str(r[0][4]) + " P:" + str(r[0][5]) + " Q:" + str(r[0][6]))
-    h4_value = r[0][4]
-
+    h4_value = h4(k, p, q, h5_value[0], qr, bp)
     # best h3 value
-    r = []
-    for (p, q) in combinations:
-        p3 = prod_modules[p]
-        q3 = qual_modules[q]
-        r.append((p, p3, q, q3, *h3(k, p3, q3, h5_value, h4_value, qr)))
-
-    filename_h3 = 'h3_'+str(k)+'_'+file_suffix+'.csv'
-    save_intermediate_results(r, filename_h3)
-
-    r.sort(key=lambda x: x[4], reverse=True)
-    print("Q3 expected output: " + str(r[0][4]) + " P:" + str(r[0][5]) + " Q:" + str(r[0][6]))
-    h3_value = r[0][4]
-
+    h3_value = h3(k, p, q, h5_value[0], h4_value[0], qr, bp)
     # best h2 value
-    r = []
-    for (p, q) in combinations:
-        p2 = prod_modules[p]
-        q2 = qual_modules[q]
-        r.append((p, p2, q, q2, *h2(k, p2, q2, h5_value, h4_value, h3_value, qr)))
-
-    filename_h2 = 'h2_'+str(k)+'_'+file_suffix+'.csv'
-    save_intermediate_results(r, filename_h2)
-
-    r.sort(key=lambda x: x[4], reverse=True)
-    print("Q2 expected output: " + str(r[0][4]) + " P:" + str(r[0][5]) + " Q:" + str(r[0][6]))
-    h2_value = r[0][4]
-
+    h2_value = h2(k, p, q, h5_value[0], h4_value[0], h3_value[0], qr, bp)
     # best h1 value
+    h1_value = h1(k, p, q, h5_value[0], h4_value[0], h3_value[0], h2_value[0], qr, bp)
+    return (h1_value, h2_value, h3_value, h4_value, h5_value)
+
+def format_solution(sol):
+    (h1, h2, h3, h4, h5) = sol
+    def aux(h):
+        return "[P:%s Q:%s] | E_out:%s" % (str(h[1]), str(h[2]), str(h[0]))
+    return "\n".join([aux(h1), aux(h2), aux(h3), aux(h4), aux(h5)])
+
+# All possible combinations of tier and qualities for modules, and save it to a csv file
+def main(k, bp, file_suffix):
+    prod_keys = prod_modules.keys()
+    qual_keys = qual_modules.keys()
+    d = {}
+    for pk in prod_keys:
+        for qk in qual_keys:
+            d[(pk, qk)] = full_setup(k, pk, qk, bp)
+    header = ["Prod\\Qual"] + list(qual_keys)
     r = []
-    for (p, q) in combinations:
-        p1 = prod_modules[p]
-        q1 = qual_modules[q]
-        r.append((p, p1, q, q1, *h1(k, p1, q1, h5_value, h4_value, h3_value, h2_value, qr)))
+    for pk in prod_keys:
+        row = [pk]
+        for qk in qual_keys:
+            row.append(format_solution(d[(pk, qk)]))
+        r.append(row)
+    r.insert(0, header)
+    save_to_csv(r, "results_" + file_suffix + ".csv")
 
-    filename_h1 = 'h1_'+str(k)+'_'+file_suffix+'.csv'
-    save_intermediate_results(r, filename_h1)
-
-    r.sort(key=lambda x: x[4], reverse=True)
-    print("Q1 expected output: " + str(r[0][4]) + " P:" + str(r[0][5]) + " Q:" + str(r[0][6]))
-    # h1_value = r[0][4] (unused)
-
-# All possible combinations of tier and qualities for modules
-def main_full(k, max_tier, max_quality):
-    module_kinds = get_all_modules_under(max_tier, max_quality)
-    all_combinations = list(itertools.product(module_kinds, repeat=2))
-    aux(k, max_tier, max_quality, all_combinations, "full_t"+str(max_tier)+"q"+str(max_quality))
-
-# Productivity and Quality modules have the same tier and quality
-def main_same(k, max_tier, max_quality):
-    module_kinds = get_all_modules_under(max_tier, max_quality)
-    combinations = [(x,x) for x in module_kinds]
-    aux(k, max_tier, max_quality, combinations, "same_t"+str(max_tier)+"q"+str(max_quality))
-
-# Using max_tier=3, max_quality=5 assumes everything has been unlocked.
-# Using max_tier=2, max_quality=3 for early game of quality setup.
 # If higher qualities haven't been unlocked yet, the results can translate: for instance, if Rare (Q3) is the highest quality available, use the result
 # for h3 for Q1 machines (i.e, h5 is always the highest quality machine available).
 if __name__ == "__main__":
-    # main_full(4,3,5)
-    main_same(4,3,5)
-    # main_full(2,3,5)
-    # main_same(2,3,5)
-    # main_full(4,2,3)
-    # main_same(4,2,3)
-    # main_full(2,2,3)
-    # main_same(2,2,3)
+    # Assembly machine 1 and 2
+    main(2, Decimal('1'), "a2")
+    # Assembly machine 3
+    main(4, Decimal('1'), "a3")
+    # Electromagnetic plant
+    main(5, Decimal('1.5'), "ep")
+

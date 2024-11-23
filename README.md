@@ -87,33 +87,28 @@ And so on.
 
 ## Usage
 
-Call either `main_full` or `main_same`:
-
 ```python
-	main_full(k, tier, quality)
+	main(k, base_productivity, filename_suffix)
 ```
 
 Where:
 
  - `k` is the maximum number of modules for the assembly machines
- - `tier` is the maximum available tier for the modules
- - `quality` is the maximum available quality for the modules
+ - `base_productivity` is the base productivity bonus of the machine
 
-We assume that when a tier or quality is available, all lower ones are too. In practice, it is always better to use the best modules available.
-
-The function will return the solutions formatted like this one:
+The function will create a csv file. In each cell, the data will given in the form:
 
 ```bash
-Q3 expected output: 0.13840359403868127637 P:2 Q:2
+[P:2 Q:2] | E_out:0.012519004224558400708
+[P:2 Q:2] | E_out:0.041607965691481048953
+[P:2 Q:2] | E_out:0.13840359403868127637
+[P:2 Q:2] | E_out:0.46341411587212205564
+[P:4 Q:0] | E_out:2.00
 ```
 
-`Q3` means that the result is for the machine with 3rd quality recipe (5 = Legendary, 4 = Epic, etc...). The number after P is the number of productivity modules, and the number after Q is the number of quality modules for this machine.
+First line is for the first machine, second line for the second machine, etc... The numbers after P and Q are the number of modules of each kind.
 
-The function also produces csv files, which contains results for all possible combinations of modules.
+The T0P0 line of productivity is for recipes that cannot accept productivity modules.
 
- `main_full` tries all possible combinations of modules, while `main_same` only tries combinations where productivity and quality modules have the same tier and quality.
-
- In practice, both seem to return the same results, but `main_same` is faster, and produce smaller csv files.
-
- If Epic and Legendary qualities are not available, use Q5 for the highest quality tier (Rare), and Q3 for common. If Epic is available, but not legendary, use Q5 for Epic and Q2 for common.
+If Epic and Legendary qualities are not available, use Q5 for the highest quality tier (Rare), and Q3 for common. If Epic is available, but not legendary, use Q5 for Epic and Q2 for common.
 
